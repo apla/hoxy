@@ -42,7 +42,7 @@ require('./runner.js')(projectName, opts);
 
 // helps to ensure the proxy stays up and running
 process.on('uncaughtException',function(err){
-    if (debug) {
+    if (opts.debug) {
         console.error('uncaught exception: '+err.message);
         console.error(err.stack);
     }
