@@ -7,6 +7,8 @@ http://github.com/greim
 // #############################################################################
 // read cmd line args and declare stuff
 
+var path = require ('path');
+
 var defaultRules = './hoxy-rules.txt';
 var projectName = 'Hoxy';
 
@@ -31,11 +33,23 @@ var opts = require('tav').set({
 		note: 'Attempt to run '+projectName+' without the startup version check.',
 		value: false,
 	},
+	'plugin-path': {
+		note: 'Specify a plugin path',
+		value: false,
+	},
 }, "Hoxy, the web-hacking proxy.\nusage: node hoxy.js [--debug] [--rules=file] [--port=port]");
 
 if (opts.args.length && parseInt(opts.args[0])) {
     console.error('!!! old: please use --port=something to specify port. thank you. exiting.');
     process.exit(1);
+}
+
+if (opts["plugin-path"]) {
+	var pluginPath = opts["plugin-path"];
+	opts.pluginPath = function (pluginName) {
+		return path.resolve (pluginPath, pluginName + '.js')
+	};
+	delete opts["plugin-path"];
 }
 
 require('./runner.js')(projectName, opts);
