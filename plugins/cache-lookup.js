@@ -26,7 +26,7 @@ exports.run = function(api){
 	function cacheFileName (req) {
 		var shasum = crypto.createHash('sha1');
 		shasum.update(req.url);
-		var fileName = path.resolve ('cache', req.hostname + '-' + req.port + '-' + shasum.digest('hex'));
+		var fileName = path.resolve (process.env['HOXY_CACHE'] || '', 'cache', req.hostname + '-' + req.port + '-' + shasum.digest('hex'));
 		var ext = req.url.match (/\.[^\/]{1,10}$/);
 		return [fileName, ext];
 	}
@@ -54,13 +54,23 @@ exports.run = function(api){
 			return;
 		}
 
+		if (statusCode == 302) {
+			api.setResponseInfo ({
+				headers: headers,
+				statusCode: statusCode,
+				body: [' ']
+			});
+			api.notify();
+			return;
+		}
+
 		fs.readFile (dataFileName, function (err, fileData) {
 			if (err) {
 				cacheMiss('DATA FILE ERROR');
 				return;
 
 			}
-			console.log ('CACHE HIT!');
+			console.log ('CACHE HIT FOR: ' + req.host + ' ' + req.url);
 			api.setResponseInfo ({
 				headers: headers,
 				statusCode: statusCode,

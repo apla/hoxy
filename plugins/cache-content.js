@@ -20,7 +20,7 @@ exports.run = function(api){
 	function cacheFileName (req) {
 		var shasum = crypto.createHash('sha1');
 		shasum.update(req.url);
-		var fileName = path.resolve ('cache', req.hostname + '-' + req.port + '-' + shasum.digest('hex'));
+		var fileName = path.resolve (process.env['HOXY_CACHE'] || '', 'cache', req.hostname + '-' + req.port + '-' + shasum.digest('hex'));
 		var ext = req.url.match (/\.[^\/]{1,10}$/);
 		return [fileName, ext];
 	}
@@ -52,6 +52,21 @@ exports.run = function(api){
 			w.write (chunk);
 		});
 		w.end();
+	} else if (res.statusCode == 302) {
+		// console.log (req.headers);
+		// console.log (res.headers);
+		var fileName = cacheFileName (req);
+
+		var wm = fs.WriteStream (fileName[0]+'.meta');
+		wm.write (JSON.stringify ([res.statusCode, res.headers]));
+		wm.end ();
+
+		// var w = fs.WriteStream (fileName[0]+'.data' + (fileName[1] ? '.'+fileName[1] : ''));
+		// res.body.forEach (function (chunk){
+		// 	w.write (chunk);
+		// });
+		// w.end();
+
 
 	} else {
 		console.log (req.url + ' ignored due status code: ' + res.statusCode);
