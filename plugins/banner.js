@@ -62,11 +62,11 @@ exports.run = function(api){
 		var text = api.getResponseBody();
 		try {
 			if (append) {
-				text += banner;
+				text += contents;
 			} else {
-				text = banner + text;
+				text = contents + text;
 			}
-			api.setResponseBody(html);
+			api.setResponseBody(text);
 		} catch (ex) {
 			console.log("banner error: "+ex.message);
 		}
