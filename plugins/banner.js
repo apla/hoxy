@@ -12,9 +12,12 @@ usage: @banner('hey, this is a banner!')
 exports.run = function(api){
 	var respInf = api.getResponseInfo();
 	var ct = respInf.headers['content-type'];
+	var contents = api.arg(0);
+	var styleOverride = api.arg(1);
+	var append = api.arg(2) || false;
 	if (ct && ct.indexOf('html')>-1) {
 		var html = api.getResponseBody();
-		var contents = api.arg(0);
+		
 		var defs = {
 			position: 'absolute',
 			top: '0',
@@ -31,7 +34,7 @@ exports.run = function(api){
 			'text-align': 'left',
 			'z-index': '99999999999'
 		};
-		var styleOverride = api.arg(1);
+		
 		if (typeof styleOverride == "string"){
 			var orList = styleOverride.split(';');
 			for (var i=0;i<orList.length;i++){
@@ -43,13 +46,25 @@ exports.run = function(api){
 		for (var q in defs){
 			styleString += q+':'+defs[q]+';'
 		}
-		var append = api.arg(2) || false;
+		
 		try {
 			var banner = '<div style="'+styleString+'">'+contents+'</div>';
 			if (append) {
 				html=html.replace(/<\/body([^>]*)>/, banner+'</body$1>');
 			} else {
 				html=html.replace(/<body([^>]*)>/, '<body$1>'+banner);
+			}
+			api.setResponseBody(html);
+		} catch (ex) {
+			console.log("banner error: "+ex.message);
+		}
+	} else {
+		var text = api.getResponseBody();
+		try {
+			if (append) {
+				text += banner;
+			} else {
+				text = banner + text;
 			}
 			api.setResponseBody(html);
 		} catch (ex) {
